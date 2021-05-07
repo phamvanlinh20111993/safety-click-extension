@@ -1,0 +1,73 @@
+{
+  "manifest_version": 2,
+  "name": "Safety Click Extension",
+  "version": "1.0.0",
+  "description": "This Extension help user click any thing on browser's page very safety",
+  "short_name": "Safety Click",
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*/*",
+        "http://*/*"
+      ],
+      "all_frames": true,
+      "js": [
+        "/assets/js/jquery-3.4.1.min.js",
+        "/assets/js/bootstrap.min.js",
+        "content.js"
+      ],
+      "css": [
+        "/css/background.css",
+        "/css/popup.css"]
+    }
+  ],
+  "web_accessible_resources": [
+    "/assets/*",
+    "/css/*"
+  ],
+  "icons": {
+    "48": "icons/safe-click.png",
+    "128": "icons/safe-click-1.png"
+  },
+  "browser_action": {
+    "default_icon": "icons/safe-click.png",
+    "default_title": "safety-click-extension",
+    "default_popup": "popup/popup.html"
+  },
+  "background": {
+    "scripts": [
+      "background.js"
+    ]
+  },
+  "homepage_url": "https://www.facebook.com/vanlinh2018",
+  "incognito": "split",
+  "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
+  "permissions": [
+    "bookmarks",
+    "clipboardRead",
+    "clipboardWrite",
+    "commands",
+    "contentSettings",
+    "contextMenus",
+    "cookies",
+    "debugger",
+    "declarativeContent",
+    "history",
+    "management",
+    "notifications",
+    "pageCapture",
+    "proxy",
+    "tabCapture",
+    "tabs",
+    "topSites",
+    "webNavigation",
+    "webRequest",
+    "webRequestBlocking",
+    "storage",
+    "activeTab",
+    "declarativeContent",
+    "cookies",
+    "https://*/*",
+    "http://*/*"
+  ]
+}
