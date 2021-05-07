@@ -18,7 +18,8 @@
       ],
       "css": [
         "/css/background.css",
-        "/css/popup.css"]
+        "/css/popup.css"
+      ]
     }
   ],
   "web_accessible_resources": [
@@ -36,11 +37,15 @@
   },
   "background": {
     "scripts": [
-      "background.js"
-    ]
+      "background/background.js"
+    ],
+    "pages": [
+      "background/background.html"
+    ],
+    "persistent": true
   },
   "homepage_url": "https://www.facebook.com/vanlinh2018",
-  "incognito": "split",
+  "incognito": "spanning",
   "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
   "permissions": [
     "bookmarks",
