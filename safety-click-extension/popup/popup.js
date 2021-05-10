@@ -3,25 +3,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const query = { active: true, currentWindow: true };
 
     chrome.tabs.query(query, (tabs) => {
-        dialogBox.innerHTML = getBarkedTitle(tabs[0].title);
+        dialogBox.innerHTML = 'hello my name is Linh';
+    });
+
+    chrome.storage.sync.set({key: 'hie'}, function() {
+        console.log('Value is set to ');
     });
 });
-
-const getBarkedTitle = (tabTitle) => {
-    const barkTitle = `${getRandomBark()} Ahem.. I mean, we are at: ${tabTitle}`
-    return barkTitle;
-}
-
-const barks = [
-    'Barf barf!',
-    'Birf birf!',
-    'Woof woof!',
-    'Arf arf!',
-    'Yip yip!',
-    'Biiiirf!'
-]
-
-const getRandomBark = () => {
-    const bark = barks[Math.floor(Math.random() * barks.length)];
-    return bark;
-}

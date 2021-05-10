@@ -2,12 +2,23 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Acho, where are we?</title>
+    <title>Safety click any website</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="../assets/css/bootstrap341.min.css">
+    <link rel="stylesheet" href="../assets/css/font-awesome.min.css">
+    <script type="text/javascript" src="../assets/js/jquery-3.4.1.min.js"></script>
+    <script type="text/javascript" src="../assets/js/bootstrap-3.4.1.min.js"></script>
     <link href="/css/popup.css" rel="stylesheet" type="text/css" />
 </head>
+
 <body>
-    <p id="dialog-box"></p>
-    <p id="dialog-box">Hello</p>
+    <div style="width: 200px;">
+        <p id="dialog-box">Add this link white list let uncheck safety click</p>
+        <button type="button" class="btn btn-primary" id='new-tab'>Add</button>
+        <p id="dialog-box">Remove this link from white list to check</p>
+        <button type="button" class="btn btn-info" id='curr-tab'>Remove</button>
+    </div>
+
     <script src='popup.js'></script>
 </body>
 </html>
