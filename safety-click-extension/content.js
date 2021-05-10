@@ -17,11 +17,13 @@ chrome.storage.sync.get(['key'], function (result) {
 
 let setTimeOutShowUpModal = null;
 
+let previousLink = null;
+
 $(document).off("cut copy paste", "**");
 
-$(document).ready(function(e) { 
+$(document).ready(function (e) {
     recreateNode(document.getElementsByTagName("body")[0]);
- });
+});
 
 $(document).mouseover(function (e) {
 
@@ -32,7 +34,7 @@ $(document).mouseover(function (e) {
     let currentElement = e.target
     if (e && currentElement.tagName === "A") {
         if (!currentElement.href && !currentElement.getAttribute("href-tmp-13123123")
-            || [currentElement.href, currentElement.getAttribute("href-tmp-13123123")].includes('javascript:void(0);')) {
+            || /^\s*javascript:/i.test(currentElement.href) || /^\s*javascript:/i.test(currentElement.getAttribute("href-tmp-13123123"))) {
             return
         }
 
@@ -49,18 +51,29 @@ $(document).mouseover(function (e) {
             href = currentElement.getAttribute("href-tmp-13123123");
         }
         console.log('href', href)
-        createModalUI({ href, value: currentElement.text || currentElement.getAttribute("title") || 'Can not get name' })
 
-        calPositionModalWithPointer(e, null)
-
+        let value = currentElement.text || currentElement.getAttribute("title") || 'Can not get name';
+        if (previousLink == value) {
+            if (setTimeOutShowUpModal) {
+                clearTimeout(setTimeOutShowUpModal)
+            }
+            setTimeOutShowUpModal = setTimeout(() => $('#modal-page-131203123').css({ display: 'none' }), 1500)
+        } else {
+            previousLink = value
+            createModalUI({ href, value })
+            calPositionModalWithPointer(e, null)
+        }
     } else {
         let currentElement = e.target
         while (currentElement && currentElement.parentElement) {
             let parentElement = currentElement.parentElement;
             if (parentElement.tagName === "A") {
-                if (!parentElement.href && !parentElement.getAttribute("href-tmp-13123123")) {
+
+                if (!parentElement.href && !parentElement.getAttribute("href-tmp-13123123")
+                    || /^\s*javascript:/i.test(parentElement.href) || /^\s*javascript:/i.test(parentElement.getAttribute("href-tmp-13123123"))) {
                     return
                 }
+
                 if ($('#modal-page-131203123') && $('#modal-page-131203123').length > 0) {
                     $('#modal-page-131203123').css("display", "block");
                 }
@@ -77,8 +90,18 @@ $(document).mouseover(function (e) {
                 }
 
                 console.log('href1', href)
-                createModalUI({ href, value: parentElement.text || parentElement.getAttribute("title") || 'Can not get name' })
-                calPositionModalWithPointer(parentElement, e)
+                let value = parentElement.getAttribute("title") || parentElement.text.trim() || 'Can not get name';
+                if (previousLink == value) {
+                    if (setTimeOutShowUpModal) {
+                        clearTimeout(setTimeOutShowUpModal)
+                    }
+                    setTimeOutShowUpModal = setTimeout(() => $('#modal-page-131203123').css({ display: 'none' }), 1500)
+                } else {
+                    previousLink = value
+                    createModalUI({ href, value })
+                    calPositionModalWithPointer(parentElement, e)
+                }
+
                 break;
             }
             currentElement = parentElement
@@ -121,7 +144,7 @@ createModalUI = data => {
 
     let content = `<div style='padding:5px;'>
       <div style='word-wrap: break-word;'>
-         <p><b>Link</b>: <a style='cursor:pointer;' href='${data.href}' target='_blank'>${data.value}</a></p> 
+         <p><b>Link</b>: <a style='cursor:pointer;' href='${data.href}' target='_self'>${data.value}</a></p> 
       </div>
       <div style='display:flex;'>
          <button type="button" id='curr-tab'>current tab</button>
@@ -141,6 +164,9 @@ createModalUI = data => {
     // click button x on corner right of modal
     shadow.querySelector('#new-tab').addEventListener('click', e => handleClickModal(e, data.href, "_blank"), false);
     shadow.querySelector('#curr-tab').addEventListener('click', e => handleClickModal(e, data.href, "_self"), false);
+    shadow.querySelector('#delete-ad').addEventListener('click', e => {
+        
+    }, false);
 
     // document.addEventListener('click', function (event) {
     //     if(event.target.id != 'popup-modal-click-safety'){
@@ -229,7 +255,6 @@ calPositionModalWithPointer = (currentElement, event) => {
             top: offsetPosEl.y + offsetPosEl.height / 2 - modalPosition.height / 2
         });
     }
-
     setTimeOutShowUpModal = setTimeout(() => $('#modal-page-131203123').css({ display: 'none' }), 1500)
     $('#modal-page-131203123').mouseover(e => {
         e.preventDefault();
@@ -280,7 +305,7 @@ recreateNode = (el, withChildren) => {
         var newEl = el.cloneNode(false);
         while (el.hasChildNodes()) newEl.appendChild(el.firstChild);
         el.parentNode.replaceChild(newEl, el);
-      }
+    }
 }
 
 console.log("chrome'", chrome)
