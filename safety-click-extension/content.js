@@ -8,7 +8,22 @@ const LIST_IGNORE_CHECK = [
     'translate.google.com',
     'ogs.google.com',
     'developer.mozilla.org',
-    'play.google.com'
+    'play.google.com',
+    'www.bing.com'
+]
+
+const FOOTER_NAME = '© 04-2021 LinhVan - Safety click Extension'
+
+const TAG_A_EVENT = [
+    'click',
+    'dbclick',
+    'mousedown',
+    'mousemove',
+    'mouseout',
+    'mouseover',
+    'mouseup',
+    'mousewheel',
+    'onwheel'
 ]
 
 chrome.storage.sync.get(['key'], function (result) {
@@ -17,13 +32,22 @@ chrome.storage.sync.get(['key'], function (result) {
 
 let setTimeOutShowUpModal = null;
 
+let isPreventBodyclick = false;
+
 let previousLink = null;
 
 $(document).off("cut copy paste", "**");
 
-$(document).ready(function (e) {
-    recreateNode(document.getElementsByTagName("body")[0]);
-});
+
+
+let intervalCheckDom = setInterval(() => {
+    if (document.readyState === 'complete') { // The page is fully loaded }
+        recreateNode(document.body, false)
+        clearInterval(intervalCheckDom)
+        isPreventBodyclick = true
+    }
+}, 500)
+
 
 $(document).mouseover(function (e) {
 
@@ -34,7 +58,8 @@ $(document).mouseover(function (e) {
     let currentElement = e.target
     if (e && currentElement.tagName === "A") {
         if (!currentElement.href && !currentElement.getAttribute("href-tmp-13123123")
-            || /^\s*javascript:/i.test(currentElement.href) || /^\s*javascript:/i.test(currentElement.getAttribute("href-tmp-13123123"))) {
+            || /^(\s*javascript:|#)/i.test(currentElement.href)
+            || /^(\s*javascript:|#)/i.test(currentElement.getAttribute("href-tmp-13123123"))) {
             return
         }
 
@@ -60,8 +85,11 @@ $(document).mouseover(function (e) {
             setTimeOutShowUpModal = setTimeout(() => $('#modal-page-131203123').css({ display: 'none' }), 1500)
         } else {
             previousLink = value
+            // build modal
             createModalUI({ href, value })
             calPositionModalWithPointer(e, null)
+            // clear all event in currentElement
+            recreateNode(currentElement, false)
         }
     } else {
         let currentElement = e.target
@@ -70,7 +98,8 @@ $(document).mouseover(function (e) {
             if (parentElement.tagName === "A") {
 
                 if (!parentElement.href && !parentElement.getAttribute("href-tmp-13123123")
-                    || /^\s*javascript:/i.test(parentElement.href) || /^\s*javascript:/i.test(parentElement.getAttribute("href-tmp-13123123"))) {
+                    || /^(\s*javascript:|#)/i.test(parentElement.href)
+                    || /^(\s*javascript:|#)/i.test(parentElement.getAttribute("href-tmp-13123123"))) {
                     return
                 }
 
@@ -98,8 +127,11 @@ $(document).mouseover(function (e) {
                     setTimeOutShowUpModal = setTimeout(() => $('#modal-page-131203123').css({ display: 'none' }), 1500)
                 } else {
                     previousLink = value
+                    // build modal
                     createModalUI({ href, value })
                     calPositionModalWithPointer(parentElement, e)
+                    // clear all event in currentElement
+                    recreateNode(parentElement, false)
                 }
 
                 break;
@@ -142,18 +174,36 @@ createModalUI = data => {
         mode: 'open'
     });
 
-    let content = `<div style='padding:5px;'>
-      <div style='word-wrap: break-word;'>
-         <p><b>Link</b>: <a style='cursor:pointer;' href='${data.href}' target='_self'>${data.value}</a></p> 
-      </div>
-      <div style='display:flex;'>
-         <button type="button" id='curr-tab'>current tab</button>
-         <span style='width:9px'></span>
-         <button type="button" id='new-tab'>new tab</button>
-         <span style='width:9px'></span>
-         <button type="button" id='delete-ad'>delete ads</button>
-      </div>
-    </div>`
+    /**
+     * i dont know why but restrict using tag p because calulate height in js wrong
+     */
+    let content
+    if (isPreventBodyclick) {
+        content = `<div style='padding:4px;'>
+            <div style='word-wrap:break-word;'>
+                <span><b><i>Link</i></b>: 
+                    <a style='cursor:pointer;' href='${data.href}' target='_self'>${data.value}</a></span> 
+            </div>
+            <div style="height:10px"></div>
+            <div style='display:flex;flex-direction:row;'>
+                <button type="button" class="btn btn-primary btn-xs" id='curr-tab'>current tab</button>
+                <span style='width:10px'></span>
+                <button type="button" class="btn btn-info btn-xs" id='new-tab'>new tab</button>
+                <span style='width:10px'></span>
+                <button type="button" class="btn btn-warning btn-xs" id='delete-ad'>delete ads</button>
+            </div>
+        </div>`
+    } else {
+        content = `<div style='padding:5px;'>
+                    <div style='word-wrap: break-word;'>
+                        <span><b>Extension have analysis links done yet.</b></span> 
+                    </div>
+                    <div style="height:5px"></div>
+                    <div class="modal-footer-trans">
+                        <span>${FOOTER_NAME}</span>
+                    </div>
+                </div>`
+    }
 
     const importCss = `<style>
                             @import "${urlCssContent}";
@@ -162,27 +212,24 @@ createModalUI = data => {
     shadow.innerHTML = `${importCss}${content}`;
 
     // click button x on corner right of modal
-    shadow.querySelector('#new-tab').addEventListener('click', e => handleClickModal(e, data.href, "_blank"), false);
-    shadow.querySelector('#curr-tab').addEventListener('click', e => handleClickModal(e, data.href, "_self"), false);
-    shadow.querySelector('#delete-ad').addEventListener('click', e => {
-        
-    }, false);
+    shadow.querySelector('#new-tab') && shadow.querySelector('#new-tab').addEventListener('click', e => handleClickModal(e, data.href, "_blank"), false);
 
-    // document.addEventListener('click', function (event) {
-    //     if(event.target.id != 'popup-modal-click-safety'){
-    //         event.preventDefault();
-    //         event.stopPropagation();
-    //     }
-    //     console.log('dâta', event.target.id)
-    // }, true);
+    shadow.querySelector('#curr-tab') && shadow.querySelector('#curr-tab').addEventListener('click', e => handleClickModal(e, data.href, "_self"), false);
+
+    shadow.querySelector('#delete-ad') && shadow.querySelector('#delete-ad').addEventListener('click', e => {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        e.cancelBubble = true;
+    }, false);
 }
 
 handleClickModal = (e, href, type) => {
-    window.open(encodeURI(href), type);
     e.preventDefault();
     e.stopPropagation();
     e.stopImmediatePropagation();
     e.cancelBubble = true;
+    window.open(encodeURI(href), type);
 }
 
 calPositionModalWithPointer = (currentElement, event) => {
@@ -201,19 +248,39 @@ calPositionModalWithPointer = (currentElement, event) => {
     }
 
     let style = element.currentStyle || window.getComputedStyle(element),
+
         paddingTop = parseFloat(style.paddingTop),
         paddingBottom = parseFloat(style.paddingBottom),
         paddingRight = parseFloat(style.paddingRight),
         paddingLeft = parseFloat(style.paddingLeft),
+
         marginLeft = parseFloat(style.marginLeft),
         marginRight = parseFloat(style.marginRight),
+        marginBottom = parseFloat(style.marginBottom),
+        marginTop = parseFloat(style.marginTop),
+
         borderTop = parseFloat(style.borderTopWidth),
-        borderBottom = parseFloat(style.borderBottomWidth);
+        borderBottom = parseFloat(style.borderBottomWidth)
+    borderLeft = parseFloat(style.borderLeftWidth),
+        borderRight = parseFloat(style.borderRightWidth);
 
     let modalStyle = document.getElementById('modal-page-131203123').currentStyle
         || window.getComputedStyle(document.getElementById('modal-page-131203123'), null),
+
         paddingModalLeft = parseFloat(modalStyle.getPropertyValue('padding-left')),
-        paddingModalRight = parseFloat(modalStyle.getPropertyValue('padding-right'))
+        paddingModalRight = parseFloat(modalStyle.getPropertyValue('padding-right')),
+        paddingModalTop = parseFloat(modalStyle.getPropertyValue('padding-top')),
+        paddingModalBottom = parseFloat(modalStyle.getPropertyValue('padding-bottom')),
+
+        marginModalLeft = parseFloat(modalStyle.getPropertyValue('margin-left')),
+        marginModalRight = parseFloat(modalStyle.getPropertyValue('margin-right')),
+        marginModalTop = parseFloat(modalStyle.getPropertyValue('margin-top')),
+        marginModalBottom = parseFloat(modalStyle.getPropertyValue('margin-bottom')),
+
+        borderModalLeft = parseFloat(modalStyle.getPropertyValue('border-left')),
+        borderModalRight = parseFloat(modalStyle.getPropertyValue('border-right')),
+        borderModalTop = parseFloat(modalStyle.getPropertyValue('border-top')),
+        borderModalBottom = parseFloat(modalStyle.getPropertyValue('border-bottom'));
 
     //  console.log('padding', paddingTop, paddingBottom, borderTop, borderBottom
     //   , 'padding modal', paddingModalLeft, paddingModalRight)
@@ -221,9 +288,9 @@ calPositionModalWithPointer = (currentElement, event) => {
     const VIEW_PORT_HEIGHT = $(window).height()
     const VIEW_PORT_WIDTH = $(window).width();
 
-    console.log('data', element.getBoundingClientRect())
-
+    console.log('modalPosition', modalPosition, 'offsetPosEl', offsetPosEl)
     // calculate position on modal
+    // bottom position
     if (offsetPosEl.top < modalPosition.height) {
         console.log('run here')
         $('#modal-page-131203123').css({
@@ -232,14 +299,17 @@ calPositionModalWithPointer = (currentElement, event) => {
         });
     }
 
+    // TODO need re check
+    // top position (above with element)
     if (offsetPosEl.top > modalPosition.height) {
         console.log('run here1')
         $('#modal-page-131203123').css({
             left: offsetPosEl.x + offsetPosEl.width / 2 - modalPosition.width / 2,
-            top: offsetPosEl.y - modalPosition.height + paddingTop + borderTop + 10
+            top: offsetPosEl.y - modalPosition.height + paddingTop + borderTop
         });
     }
 
+    // right position
     if (offsetPosEl.left < modalPosition.width) {
         console.log('run here2')
         $('#modal-page-131203123').css({
@@ -248,6 +318,8 @@ calPositionModalWithPointer = (currentElement, event) => {
         });
     }
 
+    // TODO need re check
+    // left position (right with element)
     if ((VIEW_PORT_WIDTH - offsetPosEl.right) < modalPosition.width) {
         console.log('run here3', modalPosition)
         $('#modal-page-131203123').css({
@@ -255,6 +327,7 @@ calPositionModalWithPointer = (currentElement, event) => {
             top: offsetPosEl.y + offsetPosEl.height / 2 - modalPosition.height / 2
         });
     }
+
     setTimeOutShowUpModal = setTimeout(() => $('#modal-page-131203123').css({ display: 'none' }), 1500)
     $('#modal-page-131203123').mouseover(e => {
         e.preventDefault();
@@ -300,9 +373,8 @@ detectAds = () => {
 recreateNode = (el, withChildren) => {
     if (withChildren) {
         el.parentNode.replaceChild(el.cloneNode(true), el);
-    }
-    else {
-        var newEl = el.cloneNode(false);
+    } else {
+        let newEl = el.cloneNode(false);
         while (el.hasChildNodes()) newEl.appendChild(el.firstChild);
         el.parentNode.replaceChild(newEl, el);
     }
