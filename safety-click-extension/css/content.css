@@ -6,3 +6,12 @@
     padding-bottom: 4px;
     border-top: 1px solid rgb(229, 229, 229);
 }
+
+:host { all: initial }
+
+.show-link-content{
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    max-width:300px;
+}

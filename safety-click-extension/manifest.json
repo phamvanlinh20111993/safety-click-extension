@@ -14,7 +14,7 @@
       "js": [
         "/assets/js/jquery-3.4.1.min.js",
         "/assets/js/bootstrap.min.js",
-        "content.js"
+        "/content/content.js"
       ],
       "css": [
         "/css/background.css",
